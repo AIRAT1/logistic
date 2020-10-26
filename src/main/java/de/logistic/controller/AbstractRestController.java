@@ -1,5 +1,7 @@
 package de.logistic.controller;
 
+import de.logistic.domain.ComboListItem;
+import de.logistic.dto.ListItemDto;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -7,7 +9,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
-public abstract class AbstractRestController<T, R extends JpaRepository<T, ?>> {
+import java.util.List;
+import java.util.stream.Collectors;
+
+public abstract class AbstractRestController<T extends ComboListItem, R extends JpaRepository<T, ?>> {
     protected R repo;
 
     public AbstractRestController(R repo) {
@@ -32,11 +37,20 @@ public abstract class AbstractRestController<T, R extends JpaRepository<T, ?>> {
     @PutMapping("{id}")
     public T update(@PathVariable("id") T dbObj, @RequestBody T obj) {
         BeanUtils.copyProperties(obj, dbObj, "id");
+
         return repo.save(dbObj);
     }
 
     @DeleteMapping("{id}")
-    public void delete(@PathVariable("id") T obj) {
-        repo.delete(obj);
+    public void delete(@PathVariable("id") T dbObj) {
+        repo.delete(dbObj);
+    }
+
+    @GetMapping("list")
+    public List<ListItemDto> list() {
+        return repo.findAll()
+                .stream()
+                .map(entity -> new ListItemDto(entity.getId(), entity.getName()))
+                .collect(Collectors.toList());
     }
 }

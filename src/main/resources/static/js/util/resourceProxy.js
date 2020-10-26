@@ -1,4 +1,3 @@
-
 define(function() {
     var ajax = webix.ajax().headers({
         'Content-type': 'application/json'
